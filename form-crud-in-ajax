@@ -1,0 +1,301 @@
+index.php
+--------------
+<?php
+include_once('function.php');
+$db= new Functions(); 
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+	<?php
+	if(isset($_SESSION['msg']))
+	{
+		echo $_SESSION['msg'];
+		unset($_SESSION['msg']);
+	}
+	?>
+	<button class="btn btn-success" data-toggle="modal" data-target="#myModal">Add</button>
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<td>#</td>
+				<td>name</td>
+				<td>email</td>
+				<td>Action</td>
+			</tr>
+		</thead>
+		<tbody>
+			<?php
+			$users = $db->get_users();
+			$i = 1;
+			while($row = mysqli_fetch_assoc($users))
+			{ ?>
+				<tr>
+				<td><?php echo $i++; ?></td>
+				<td><?php echo $row['name']; ?></td>
+				<td><?php echo $row['email']; ?></td>
+				<td>
+					<a class="btn btn-danger btn-xs" onclick="return confirm('Are you sure?');" href="process.php?action=delete&id=<?php echo $row['id'] ?>">Delete</a>
+				</td>
+				<td>
+				  			
+				
+					<a class="btn btn-danger btn-xs"  href="" data-toggle="modal" data-target="#myModaledit<?php echo $row['id'] ?>">Edit</a>
+				</td>
+			</tr>
+			  <!-- Modal -->
+  <div class="modal fade" id="myModaledit<?php echo $row['id'] ?>" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+	  <form id="edit_form<?php echo $row['id'] ?>" onsubmit="return edit_form1(<?php echo $row['id'] ?>);">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+			<div class="form-group">
+				<input type="text" name="name" value="<?php echo $row['name'] ?>" class="form-control" required>
+			</div>
+			<div class="form-group">
+				<input type="email" name="email" value="<?php echo $row['email'] ?>" class="form-control" required>
+				<input type="hidden" name="id" value="<?php echo $row['id'] ?>">
+			</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-info">submit</button>
+        </div>
+      </div>
+      </form>
+    </div>
+  </div>
+			<?php }
+			?>
+			
+		</tbody>
+	</table>
+</div>
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+	  <form id="add_form" onsubmit="return add_form();">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+			<div class="form-group">
+				<input type="text" name="name" class="form-control" required>
+			</div>
+			<div class="form-group">
+				<input type="email" name="email" class="form-control" required>
+			</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-info">submit</button>
+        </div>
+      </div>
+      </form>
+    </div>
+  </div>
+</body>
+<script>
+function add_form()
+{
+	$.ajax({
+		type: 'POST',
+		url : 'process.php?action=add_users',
+		dataType : 'JSON',
+		data : $('#add_form').serialize(),
+		success : function (resp) 
+		{
+			location.reload();
+		}	
+	});
+	return false;
+}
+
+function edit_form1(id)
+{
+	$.ajax({
+		type: 'POST',
+		url : 'process.php?action=edit_form',
+		dataType : 'JSON',
+		data : $('#edit_form'+id).serialize(),
+		success : function (resp) 
+		{
+			location.reload();
+		}	
+	});
+	return false;
+}
+
+/*
+function update_form()
+{
+	$.ajax({
+		type: 'POST',
+		url : 'process.php?action=update_users',
+		dataType : 'JSON',
+		data : $('#update_form').serialize(),
+		success : function (resp) 
+		{
+			location.reload();
+		}	
+	});
+	return false;
+}*/
+</script>
+</html>
+---------------
+function.php
+------------------
+<?php
+session_start();
+define('DbHost', 'localhost');
+define('DbUser', 'root');
+define('DbPass', '');
+define('DbName', 'project_priyanka');
+
+class Functions
+{
+	function __construct()
+	{
+		$this->con=mysqli_connect(DbHost, DbUser, DbPass, DbName) or die('Could not connect: ' . mysqli_connect_error());
+	}
+	function query($q)
+	{
+		$q = mysqli_query($this->con,$q);
+		return $q;
+	}
+	function get_users()
+	{
+		$sql = "select * from user";
+		$query = $this->query($sql);
+		return $query;
+	}
+function get_users_update()
+	{
+		$sql = "select * from user where id='".$_REQUEST['id']."'";
+		$query = $this->query($sql);
+		return $query;
+	}
+	
+	function get_update()
+	{
+	   $updte = "update user set name='".$_REQUEST['name']."', email = '".$_REQUEST['email']."' where id='".$_REQUEST['id']."'";
+		$query = $this->query($updte);
+		return $updte;
+	}
+}
+?>
+-----------------
+process.php
+---------
+<?php
+include_once('function.php');
+$db= new Functions(); 
+
+if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_form')
+{
+	$sql = "update user set name='".$_REQUEST['name']."', email = '".$_REQUEST['email']."' where id = '".$_REQUEST['id']."'";
+	$run = $db->query($sql);
+	if($run)
+	{
+		$_SESSION['msg'] = '<div class="alert alert-success">Success</div>';
+		echo 1;
+	}
+	else 
+	{
+		$_SESSION['msg'] = '<div class="alert alert-danger">Error</div>';
+		echo 0;
+	}
+}
+else if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'add_users')
+{
+	$sql = "insert into user set name='".$_REQUEST['name']."', email = '".$_REQUEST['email']."'";
+	$run = $db->query($sql);
+	if($run)
+	{
+		$_SESSION['msg'] = '<div class="alert alert-success">Success</div>';
+		echo 1;
+	}
+	else 
+	{
+		$_SESSION['msg'] = '<div class="alert alert-danger">Error</div>';
+		echo 0;
+	}
+}
+else if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'delete')
+{
+	$sql = "delete from  user where id = '".$_REQUEST['id']."'";
+	$run = $db->query($sql);
+	if($run)
+	{
+		$_SESSION['msg'] = '<div class="alert alert-success">Delete Success</div>';
+
+	}
+	else 
+	{
+		$_SESSION['msg'] = '<div class="alert alert-danger">Error</div>';
+	}
+	header('Location:index.php');
+}
+/*
+else if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'update')
+	{?>
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<td>#</td>
+				<td>name</td>
+				<td>email</td>
+			</tr>
+		</thead>
+		<tbody>
+			<?php
+			$users = $db->get_users_update();
+			while($row = mysqli_fetch_assoc($users))
+			{ ?>
+				<tr>
+				<td><?php echo $row['id']; ?></td>
+				<td><input type="text" value="<?php echo $row['name'];?>" name="name"></td>
+				<td><input type="text" value="<?php echo $row['email'];?>" name="email"></td>
+				<td><input type="submit" name="sub" value="submit"></td>
+				</tr>
+			<?php
+            
+		
+
+
+//add new
+
+			}
+			
+			
+			?>
+			
+		</tbody>
+	</table>
+<?php 
+
+
+
+}*/
+?>
