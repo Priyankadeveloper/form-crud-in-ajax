@@ -1,0 +1,11 @@
+js
+------------
+  $.ajax({
+			url:"process/process.php?action=landlordsignup",
+			type:"POST",
+			dataType:'JSON',
+			data:$('#signup_forms').serialize(),
+			success:function(data) 
+			-----
+      process.php
+			 $json['status'] = 1; 
