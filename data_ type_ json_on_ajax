@@ -8,4 +8,7 @@ js
 			success:function(data) 
 			-----
       process.php
+      if(isset($_REQUEST['action']) && $_REQUEST['action']=='landlordsignup')
+	{ 
 			 $json['status'] = 1; 
+}
