@@ -1,0 +1,359 @@
+<?php include('include/header1.php');
+	if(!isset($_SESSION['is_user_logged_in']))
+{
+	$db->redirect('login.php'); 
+	die;
+}	
+if(($row['profile_status']!='1')&&($row['u_type']=='1'))
+{
+	$db->redirect('dashboard.php'); 
+	die;
+}
+	$pagename=basename($_SERVER['PHP_SELF']);
+	$data = $db->get_user_data_byid($_SESSION['user_id']);
+	$r2= mysqli_fetch_assoc($data);
+	
+	?> 
+    <style>
+      
+      #locationField {
+        height: 20px;
+        margin-bottom: 2px;
+      }
+	  .inner-menu .navbar{
+	box-shadow:00px 0px 0px
+}
+.inner-dash .band{
+    background: #fff;
+    box-shadow:0px 4px 4px 0 rgba(0,0,0,.1);
+    padding: 15px;
+	border-top:1px solid #f1f1f1; 
+}
+.select_full .chosen-container.chosen-container-multi{    
+		width: 100% !important;
+	}
+    </style>
+	
+	<style>
+	
+	</style>
+<?php include('include/header2.php')?>	
+<div class="dash-gray">
+	<div class="container">
+<div class="user-detail-edit">
+<section>
+<div class="">
+	<?php include('include/sidebar.php')?>
+	<div class="col-sm-9">
+	
+	   
+		<div class="right-side-user">
+		<h2>Areas of Specialization</h2>  
+				<!--   Update your profile-->                           
+		<div class="set-box">
+			 
+        <form method="post"  name="portfolio" action="process/process.php?action=portfolio&id=4">
+        <div class="form-group chc-imgages">
+			
+		    <?php 
+			      $skills='';
+				  $dr=$db->Getexpertcats();
+				  while($q = mysqli_fetch_array($dr)){
+					   $skills.=$q['a_id'].",";
+				  }
+				  $skills=rtrim($skills, ",");
+				  $skills=explode(",",$skills);
+				  $result4=$db->get_category_list();
+				  while($r = mysqli_fetch_array($result4)){
+				  ?>
+				  <div class="row">
+				   <div class="col-md-3">
+				   <div class="check-img check-img121">
+				   <label class="img-checkbox">		  
+				   <img src="admin/img/cat_img/<?php echo $r['cat_img'];?>" height="110" width="100%" alt="..." class="img-check" />
+				   <input type="checkbox" name="chk1[]" id="myCheck<?php echo $r['cat_id'];?>" value="<?php echo $r['cat_id'];?>" class="checkbox" autocomplete="off" onclick="myFunction(<?php echo $r['cat_id'];?>)" <?php if(in_array($r['cat_id'],$skills)){?> checked="checked" <?php } ?> /> 
+				   <input type="hidden" id="imd" name="a_id" value="<?php echo $r['cat_id'];?>" />
+				   <p class="add-p"><?php echo $r['cat_name'];?></p></label>
+				   </div>
+				   </div>
+				   <div class="col-md-9">
+						 <div  id="text<?php echo $r['cat_id'];?>" <?php if(in_array($r['cat_id'],$skills)){?> style="display:block" <?php } else { ?>style="display:none" <?php } ?>>
+							<div class="col-sm-12 List11111">	
+							<p><strong><?php echo $r['cat_name'];?> </strong><?php echo $r['cat_desc'];?></p>
+							<div>
+							<!--To give the control a modern look, I have applied a stylesheet in the parent span.-->
+							<span class="btn btn-success fileinput-button">
+							<span class="selecyt_val<?php echo $r['cat_id'];?>">Select Attachment</span>
+							 <input type="file" name="p_img[]" id="my_files<?php echo $r['cat_id'];?>" data-ids="<?php echo $r['cat_id'];?>" class="files"  accept="image/jpeg, image/png, image/gif,"><br />
+						   </span>
+							 <output class="Filelist" >
+								<ul class="Filelist2" id="Filelist<?php echo $r['cat_id'];?>">
+								<?php
+								$dr=$db->Getexpertcatimages($r['cat_id']);
+				                while($q = mysqli_fetch_array($dr)){
+								?>
+								<li id="list<?php echo $q['p_id'];?>"><div class="img-wrap"> <span class="close" style="width: 16%;text-align: center;font-size: 13px;" onclick="del_area_img(<?php echo $q['p_id'];?>);"><i style="color:white;    margin-top: -5px;" class="fa fa-times" aria-hidden="true"></i></span>
+								<img class="thumb" src="profile/<?php echo $q['p_img'];?>" /></div><input name="filesets_<?php echo $r['cat_id'];?>[]" value="<?php echo $q['p_img'];?>" type="hidden"  /></li>
+								
+								<?php } ?>
+								</ul>
+							 </output>
+						  </div>						 
+							</div>
+						</div>
+					</div>
+				  </div>  
+				  <?php } ?>
+				  
+		  </div> 
+		  
+		  
+		  
+        </form>
+		</div>                            
+		
+		
+		
+			
+		</div>
+		</div>
+	</div>
+</section>
+</div>
+</div>
+</div>
+
+
+<script type="text/javascript">
+function myFunction(id) {
+    var checkBox = document.getElementById("myCheck"+id);
+    var text = document.getElementById("text"+id);
+    if (checkBox.checked == true){
+        text.style.display = "block";
+    } else {
+       text.style.display = "none";
+    }
+}	
+$(".files").change(function(){
+	var ids=$(this).data('ids');
+    readImageData(this,ids);//Call image read and render function
+});
+function readImageData(imgData,id){
+	if (imgData.files && imgData.files[0]) {
+        var readerObj = new FileReader();
+		var size=Math.round(imgData.files[0].size/1024);
+        readerObj.onload = function (element) {
+			var image = new Image();
+				image.src = element.target.result;
+				image.onload = function () {
+				var height = this.height;
+				var width = this.width;
+				var len=$("#Filelist"+id).children().length;
+				if(size>20048)
+				{
+					alert('You can upload upto 20 MB File. Try Again');
+					return false;
+				}
+				if(len==10)
+				{
+					alert('Maximum 10 image allow for a specification.');
+					return false;
+				}
+				if(width>=100)
+				{
+					$.ajax({
+						url:"process/process.php?action=save_filesindb&a_id="+id,
+						type:"POST",
+						data:{'img':element.target.result},
+						async:false,
+						dataType:'json',
+						beforeSend:function()
+						{
+							$('.selecyt_val'+id).html('Uploading...');
+						},
+						success:function(data)
+						{
+							$('.selecyt_val'+id).html('Select Attachment');
+							if(data.result==1)
+							{
+							$('#Filelist'+id).append('<li id="list'+data.p_id+'"><div class="img-wrap"> <span class="close" style="width: 16%;text-align: center;font-size: 13px;" onclick="del_area_img('+data.p_id+');"><i style="color:white;    margin-top: -5px;" class="fa fa-times" aria-hidden="true"></i></span>' +
+							'<img class="thumb" src="profile/'+data.image+'" />' + '</div><input name="filesets_'+id+'[]" value="'+data.image+'" type="hidden"  /></li>');
+							}
+						}
+					});
+					//$('#preview_img').attr('src', element.target.result);
+					
+				} 
+				else
+				{
+					$('#my_files'+id).val('');
+					alert('Shortest edge should be between 100 pixels.');
+					//toastr.error('Shortest edge should be between 1,500 and 10,000 pixels.', 'Error!', {timeOut: 5000});
+				}
+			}
+        }	
+         
+        readerObj.readAsDataURL(imgData.files[0]);
+    }
+}
+
+function del_area_img(id)
+{
+	$.ajax({
+		url:"process/process.php?action=del_area_img&id="+id,
+		type:"POST",
+		success:function(data)
+		{
+			$("#list"+id).remove();
+		}
+	});
+}
+</script> 
+<?php include ('include/footer.php') ?>
+		
+	<style>	
+	.select_full .chosen-container.chosen-container-multi{    
+		width: 100% !important;
+	}	
+  ul#stepForm, ul#stepForm li {
+    margin: 0;
+    padding: 0;
+  }
+  ul#stepForm li {
+    list-style: none outside none;
+  } 
+  label{margin-top: 10px;}
+  .help-inline-error{color:red;}
+  
+  .check
+{
+    opacity:0.5;
+	color:#996;
+	
+}
+
+/*Copied from bootstrap to handle input file multiple*/
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: normal;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        /*Also */
+        .btn-success {
+            border: 1px solid #c5dbec;
+            background: #D0E5F5;
+            font-weight: bold;
+            color: #2e6e9e;
+        }
+        /* This is copied from https://github.com/blueimp/jQuery-File-Upload/blob/master/css/jquery.fileupload.css */
+        .fileinput-button {
+            position: relative;
+            overflow: hidden;
+        }
+
+            .fileinput-button input {
+                position: absolute;
+                top: 0;
+                right: 0;
+                margin: 0;
+                opacity: 0;
+                -ms-filter: 'alpha(opacity=0)';
+                font-size: 200px;
+                direction: ltr;
+                cursor: pointer;
+            }
+
+        .thumb {
+            height: 80px;
+            width: 100px;
+            border: 1px solid #000;
+        }
+
+        ul.thumb-Images li {
+            width: 120px;
+            float: left;
+            display: inline-block;
+            vertical-align: top;
+            height: 120px;
+        }
+
+        .img-wrap {
+            position: relative;
+            display: inline-block;
+            font-size: 0;
+        }
+
+            .img-wrap .close {
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                z-index: 100;
+                background-color: #D0E5F5;
+                padding: 5px 2px 2px;
+                color: #000;
+                font-weight: bolder;
+                cursor: pointer;
+                opacity: .5;
+                font-size: 23px;
+                line-height: 10px;
+                border-radius: 50%;
+            }
+
+            .img-wrap:hover .close {
+                opacity: 1;
+                background-color: #ff0000;
+            }
+
+        .FileNameCaptionStyle {
+            font-size: 12px;
+        }
+</style>
+---------------------------------------------------------
+process/process.php
+-----------------------------
+else if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'save_filesindb')
+{
+	$data = $_REQUEST['img']; // Your data 'data:image/png;base64,AAAFBfj42Pj4';
+    list($type, $data) = explode(';', $data);
+   //list(, $data)      = explode(',', $data);
+	$data = base64_decode($data);
+	$new_name = rand(10000,99999).time().'.png';
+	$path = '../profile/'.$new_name;
+	//file_put_contents($path, $data);
+	if(file_put_contents($path, $data))
+	{
+		$db->query("insert into tbl_profile set user_id='".$_SESSION["user_id"]."',a_id='".$_REQUEST['a_id']."',p_img='".$new_name."'");
+		
+		$p_id=$db->insert_id();
+		$data1['result']=1;
+		$data1['image']=$new_name;
+		$data1['p_id']=$p_id;
+		
+		
+		
+	}
+	else 
+	{
+		$data1['result']=0;
+	}
+	echo json_encode($data1);
+}
+
+
+
+----------------
+
