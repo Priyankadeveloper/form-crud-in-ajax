@@ -1,0 +1,10 @@
+function real_sring($q)
+	{
+	$string = mysqli_real_escape_string($this->con, $q);
+	return $string;
+	}
+------	
+process
+-------	
+	$cmt=$db->real_sring($_REQUEST['cmt']);
+------------------------
