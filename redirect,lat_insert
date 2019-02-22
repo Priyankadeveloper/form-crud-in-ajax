@@ -1,0 +1,11 @@
+function redirect($location)
+	{ 
+		echo '<script>window.location.href="'.$location.'"</script>';
+		die(); 
+	}
+  
+  function insert_id()
+	{
+		$id = mysqli_insert_id($this->con);
+		return $id;
+	}
