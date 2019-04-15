@@ -1,0 +1,44 @@
+public function get_chat_onclick()
+{
+$sid = $this->session->userdata('user_id');
+$rid = $this->input->post('id');
+
+$where = "(mch_sId = '".$sid."' and mch_rId = '".$rid."') or (mch_sId = '".$rid."' and mch_rId = '".$sid."')";
+$this->db->limit(100);
+$run = $this->general->get_data('match_chat',$where,'mch_id','asc');
+
+$userXYZ = $this->general->get_userDateByid($rid);
+$userXYZ = $userXYZ->row_array();
+$json['name'] = ($userXYZ['u_xbox'])?$userXYZ['u_xbox']:$userXYZ['u_psn'];
+$json['image_d'] = '<img src="https://webwiders.com/WEB01/2win4you/assets/img/profile/'.$userXYZ['u_profile'].'">';
+
+}
+function get_chat_onclick(id) {
+	
+
+	$('#chat_s').show();
+	$.ajax({
+		type:'POST',
+		url:site_url+'friend/get_chat_onclick',
+		data:{id:id},
+		dataType:'JSON',
+		success:function(resp)
+		{
+
+			if(resp.status==1)
+			{
+				$('#rid').val(id);
+				$('#send_msg').show();
+				$('#chatername').html(resp.name);
+				$('#image').html(resp.image_d);
+				$('#get_chat').html(resp.data);
+				$("#get_chat").stop().animate({ scrollTop: $("#get_chat")[0].scrollHeight}, 1000);
+			} 
+			else
+			{
+				toastr.error('Something wen wrong, please try again later');
+			}
+		}
+	});
+	return false;
+}
